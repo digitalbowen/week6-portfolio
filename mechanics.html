@@ -1,0 +1,737 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Mechanics Phenomena Visualized</title>
+  <meta name="description" content="An interactive gravity sandbox — bodies attract, orbit, and merge in real time." />
+  <style>
+    /* ============================================================
+       Mechanics Phenomena Visualized — gravity sandbox
+       Dark, futuristic single-file demo. No frameworks.
+       ============================================================ */
+    :root {
+      --bg: #05070d;
+      --accent: #35e0ff;
+      --accent-dim: rgba(53, 224, 255, 0.35);
+      --text: #cfe9ff;
+      --text-dim: #7f9bb3;
+      --panel: rgba(10, 18, 30, 0.72);
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    html, body { height: 100%; }
+
+    body {
+      background: radial-gradient(1200px 800px at 70% -10%, #0b1830 0%, var(--bg) 60%);
+      color: var(--text);
+      font-family: "Segoe UI", system-ui, -apple-system, sans-serif;
+      overflow: hidden;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    .app { display: flex; flex-direction: column; height: 100vh; }
+
+    /* ---------- Title bar ---------- */
+    .topbar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0.7rem 1.4rem;
+      border-bottom: 1px solid var(--accent-dim);
+      background: linear-gradient(180deg, rgba(8, 16, 28, 0.9), rgba(8, 16, 28, 0.4));
+      backdrop-filter: blur(8px);
+      z-index: 5;
+    }
+    .topbar h1 {
+      font-size: clamp(1rem, 2.4vw, 1.5rem);
+      font-weight: 700;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      background: linear-gradient(90deg, #8fe9ff, #35e0ff 60%, #b98bff);
+      -webkit-background-clip: text;
+      background-clip: text;
+      -webkit-text-fill-color: transparent;
+      text-shadow: 0 0 22px rgba(53, 224, 255, 0.25);
+    }
+
+    .counter {
+      font-variant-numeric: tabular-nums;
+      font-size: 0.95rem;
+      color: var(--text-dim);
+      border: 1px solid var(--accent-dim);
+      border-radius: 999px;
+      padding: 0.3rem 0.9rem;
+      background: rgba(53, 224, 255, 0.06);
+      white-space: nowrap;
+    }
+    .counter b { color: var(--accent); font-weight: 700; }
+
+    /* ---------- Stage ---------- */
+    .stage { position: relative; flex: 1; min-height: 0; }
+
+    canvas#sky {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      display: block;
+      background: #000;
+      cursor: crosshair;
+      touch-action: none;
+    }
+
+    /* ---------- Control panel ---------- */
+    .panel {
+      position: absolute;
+      top: 1rem;
+      left: 1rem;
+      width: 250px;
+      max-width: calc(100vw - 2rem);
+      padding: 1rem 1.1rem 1.15rem;
+      border: 1px solid var(--accent-dim);
+      border-radius: 16px;
+      background: var(--panel);
+      backdrop-filter: blur(12px);
+      box-shadow: 0 10px 40px rgba(0, 0, 0, 0.5), 0 0 0 1px rgba(53, 224, 255, 0.05) inset;
+      z-index: 4;
+    }
+    .panel__title {
+      font-size: 0.7rem;
+      letter-spacing: 0.22em;
+      text-transform: uppercase;
+      color: var(--accent);
+      margin-bottom: 0.85rem;
+      opacity: 0.85;
+    }
+
+    .ctrl { margin-bottom: 0.8rem; }
+    .ctrl label {
+      display: flex;
+      justify-content: space-between;
+      font-size: 0.78rem;
+      color: var(--text-dim);
+      margin-bottom: 0.3rem;
+    }
+    .ctrl label .val { color: var(--text); font-variant-numeric: tabular-nums; }
+
+    input[type="range"] {
+      -webkit-appearance: none;
+      appearance: none;
+      width: 100%;
+      height: 4px;
+      border-radius: 999px;
+      background: linear-gradient(90deg, var(--accent), rgba(53, 224, 255, 0.15));
+      outline: none;
+    }
+    input[type="range"]::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      width: 15px; height: 15px;
+      border-radius: 50%;
+      background: #eafbff;
+      border: 2px solid var(--accent);
+      box-shadow: 0 0 10px var(--accent);
+      cursor: pointer;
+    }
+    input[type="range"]::-moz-range-thumb {
+      width: 15px; height: 15px;
+      border-radius: 50%;
+      background: #eafbff;
+      border: 2px solid var(--accent);
+      box-shadow: 0 0 10px var(--accent);
+      cursor: pointer;
+    }
+    /* toggles */
+    .toggles { display: flex; flex-direction: column; gap: 0.5rem; margin: 0.9rem 0; }
+    .switch {
+      display: flex;
+      align-items: center;
+      gap: 0.6rem;
+      font-size: 0.8rem;
+      color: var(--text);
+      cursor: pointer;
+      user-select: none;
+    }
+    .switch input { position: absolute; opacity: 0; pointer-events: none; }
+    .switch .track {
+      position: relative;
+      width: 38px; height: 20px;
+      border-radius: 999px;
+      background: rgba(255, 255, 255, 0.1);
+      border: 1px solid var(--accent-dim);
+      transition: background 0.2s ease;
+      flex: none;
+    }
+    .switch .track::after {
+      content: "";
+      position: absolute;
+      top: 2px; left: 2px;
+      width: 14px; height: 14px;
+      border-radius: 50%;
+      background: var(--text-dim);
+      transition: transform 0.2s ease, background 0.2s ease;
+    }
+    .switch input:checked + .track { background: rgba(53, 224, 255, 0.3); }
+    .switch input:checked + .track::after {
+      transform: translateX(18px);
+      background: var(--accent);
+      box-shadow: 0 0 8px var(--accent);
+    }
+
+    /* buttons */
+    .buttons { display: grid; grid-template-columns: 1fr 1fr; gap: 0.5rem; margin-top: 0.4rem; }
+    .btn {
+      font: inherit;
+      font-size: 0.8rem;
+      font-weight: 600;
+      letter-spacing: 0.04em;
+      color: var(--text);
+      padding: 0.5rem 0.4rem;
+      border: 1px solid var(--accent-dim);
+      border-radius: 10px;
+      background: rgba(53, 224, 255, 0.08);
+      cursor: pointer;
+      transition: background 0.15s ease, box-shadow 0.15s ease, transform 0.05s ease;
+    }
+    .btn:hover { background: rgba(53, 224, 255, 0.2); box-shadow: 0 0 14px rgba(53, 224, 255, 0.25); }
+    .btn:active { transform: translateY(1px); }
+    .btn--wide { grid-column: span 2; }
+    .btn.is-active { background: rgba(185, 139, 255, 0.25); border-color: rgba(185, 139, 255, 0.6); color: #eadcff; }
+
+    /* ---------- Hint ---------- */
+    .hint {
+      position: absolute;
+      bottom: 1rem;
+      left: 50%;
+      transform: translateX(-50%);
+      padding: 0.5rem 1.1rem;
+      font-size: 0.82rem;
+      color: var(--text-dim);
+      border: 1px solid var(--accent-dim);
+      border-radius: 999px;
+      background: rgba(8, 16, 28, 0.6);
+      backdrop-filter: blur(8px);
+      white-space: nowrap;
+      max-width: calc(100vw - 2rem);
+      overflow: hidden;
+      text-overflow: ellipsis;
+      z-index: 4;
+      pointer-events: none;
+    }
+    .hint b { color: var(--accent); font-weight: 600; }
+
+    @media (max-width: 560px) {
+      .panel { width: 210px; padding: 0.8rem; }
+      .hint { font-size: 0.72rem; }
+    }
+  </style>
+</head>
+<body>
+  <div class="app">
+    <!-- ============ Title bar ============ -->
+    <header class="topbar">
+      <h1>Mechanics Phenomena Visualized</h1>
+      <div class="counter">Bodies: <b id="count">0</b></div>
+    </header>
+
+    <!-- ============ Stage ============ -->
+    <div class="stage">
+      <canvas id="sky"></canvas>
+
+      <!-- Control panel (top-left) -->
+      <aside class="panel">
+        <div class="panel__title">Controls</div>
+
+        <div class="ctrl">
+          <label for="gravity">Gravity strength <span class="val" id="gravityVal">1.00</span></label>
+          <input type="range" id="gravity" min="0" max="3" step="0.05" value="1" />
+        </div>
+        <div class="ctrl">
+          <label for="expansion">Universe expansion <span class="val" id="expansionVal">0</span></label>
+          <input type="range" id="expansion" min="0" max="100" step="1" value="0" />
+        </div>
+        <div class="ctrl">
+          <label for="mass">New body mass <span class="val" id="massVal">40</span></label>
+          <input type="range" id="mass" min="1" max="400" step="1" value="40" />
+        </div>
+
+        <div class="toggles">
+          <label class="switch">
+            <input type="checkbox" id="trails" checked />
+            <span class="track"></span> Motion trails
+          </label>
+          <label class="switch">
+            <input type="checkbox" id="merge" checked />
+            <span class="track"></span> Merge on collision
+          </label>
+        </div>
+
+        <div class="buttons">
+          <button class="btn" id="pause" type="button">Pause</button>
+          <button class="btn" id="clear" type="button">Clear</button>
+          <button class="btn" id="galaxy" type="button">Galaxy</button>
+          <button class="btn" id="binary" type="button">Binary</button>
+        </div>
+      </aside>
+
+      <!-- Instruction hint (bottom center) -->
+      <div class="hint">
+        <b>Drag</b> to launch a body — <b>Click</b> to place at rest — sliders tune G &amp; expansion
+      </div>
+    </div>
+  </div>
+  <script>
+  (function () {
+    "use strict";
+
+    /* ---------------------------------------------------------
+       Setup: canvas, DPI scaling, control references
+       --------------------------------------------------------- */
+    const canvas = document.getElementById("sky");
+    const ctx = canvas.getContext("2d");
+    const countEl = document.getElementById("count");
+
+    const gravityInput = document.getElementById("gravity");
+    const expansionInput = document.getElementById("expansion");
+    const massInput = document.getElementById("mass");
+    const gravityVal = document.getElementById("gravityVal");
+    const expansionVal = document.getElementById("expansionVal");
+    const massVal = document.getElementById("massVal");
+
+    const trailsInput = document.getElementById("trails");
+    const mergeInput = document.getElementById("merge");
+    const pauseBtn = document.getElementById("pause");
+    const clearBtn = document.getElementById("clear");
+    const galaxyBtn = document.getElementById("galaxy");
+    const binaryBtn = document.getElementById("binary");
+
+    // world size in CSS pixels (kept in sync with the canvas)
+    let W = 0, H = 0, dpr = 1;
+
+    function resize() {
+      dpr = Math.min(window.devicePixelRatio || 1, 2);
+      W = canvas.clientWidth;
+      H = canvas.clientHeight;
+      canvas.width = Math.round(W * dpr);
+      canvas.height = Math.round(H * dpr);
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    }
+    window.addEventListener("resize", resize);
+
+    /* ---------------------------------------------------------
+       Physics constants & state
+       --------------------------------------------------------- */
+    const G_BASE = 0.9;       // base gravitational constant
+    const SOFTEN = 6;         // Plummer softening (px) — avoids singular forces
+    const SUBSTEPS = 2;       // integration sub-steps per frame (stability)
+    const LAUNCH_K = 0.09;    // drag distance -> launch speed
+    const MAX_BODIES = 420;   // safety cap
+    const RADIUS_K = 2.1;     // radius = RADIUS_K * cbrt(mass)
+
+    let bodies = [];
+    let paused = false;
+    function effectiveG() { return G_BASE * parseFloat(gravityInput.value); }
+    function hubbleH() { return parseFloat(expansionInput.value) * 0.00002; } // expansion rate
+    function cx() { return W / 2; }
+    function cy() { return H / 2; }
+
+    /* ---------------------------------------------------------
+       Body model
+       Radius grows with the cube root of mass (constant density),
+       so merging two bodies conserves total "volume" visually.
+       --------------------------------------------------------- */
+    function makeBody(x, y, vx, vy, mass) {
+      return { x: x, y: y, vx: vx, vy: vy, mass: mass };
+    }
+
+    function radiusOf(mass) {
+      return Math.max(2, RADIUS_K * Math.cbrt(mass));
+    }
+
+    // Map mass -> colour: light = blue-white, heavy = red. Log scale.
+    function colorOf(mass) {
+      const t = Math.max(0, Math.min(1, (Math.log(mass) - Math.log(2)) / (Math.log(5000) - Math.log(2))));
+      let r, g, b;
+      if (t < 0.5) {
+        // blue-white -> warm white
+        const k = t / 0.5;
+        r = lerp(175, 255, k);
+        g = lerp(205, 240, k);
+        b = lerp(255, 205, k);
+      } else {
+        // warm white -> red
+        const k = (t - 0.5) / 0.5;
+        r = 255;
+        g = lerp(240, 95, k);
+        b = lerp(205, 70, k);
+      }
+      return { r: Math.round(r), g: Math.round(g), b: Math.round(b) };
+    }
+
+    function lerp(a, b, t) { return a + (b - a) * t; }
+
+    function addBody(b) {
+      if (bodies.length >= MAX_BODIES) return;
+      bodies.push(b);
+    }
+    /* ---------------------------------------------------------
+       Simulation step
+       --------------------------------------------------------- */
+    function step(dt) {
+      const G = effectiveG();
+      const H0 = hubbleH();
+      const n = bodies.length;
+
+      // --- pairwise gravity: a += G * m_j * r / (|r|^2 + soft^2)^(3/2) ---
+      for (let i = 0; i < n; i++) {
+        const a = bodies[i];
+        let ax = 0, ay = 0;
+        for (let j = 0; j < n; j++) {
+          if (i === j) continue;
+          const b = bodies[j];
+          const dx = b.x - a.x;
+          const dy = b.y - a.y;
+          const d2 = dx * dx + dy * dy + SOFTEN * SOFTEN;
+          const inv = 1 / (d2 * Math.sqrt(d2));
+          const f = G * b.mass * inv;
+          ax += dx * f;
+          ay += dy * f;
+        }
+        a.vx += ax * dt;
+        a.vy += ay * dt;
+      }
+
+      // --- integrate positions, apply cosmological expansion ---
+      const ccx = cx(), ccy = cy();
+      for (let i = 0; i < n; i++) {
+        const a = bodies[i];
+        a.x += a.vx * dt;
+        a.y += a.vy * dt;
+        if (H0 > 0) {
+          a.x += (a.x - ccx) * H0 * dt;
+          a.y += (a.y - ccy) * H0 * dt;
+        }
+      }
+
+      // --- collisions ---
+      if (mergeInput.checked) {
+        resolveMerges();
+      } else {
+        resolveBounces();
+      }
+    }
+    // Merge overlapping bodies, conserving mass and momentum.
+    function resolveMerges() {
+      for (let i = 0; i < bodies.length; i++) {
+        const a = bodies[i];
+        for (let j = i + 1; j < bodies.length; j++) {
+          const b = bodies[j];
+          const dx = b.x - a.x;
+          const dy = b.y - a.y;
+          const dist = Math.hypot(dx, dy);
+          if (dist < radiusOf(a.mass) + radiusOf(b.mass)) {
+            const m = a.mass + b.mass;
+            // centre of mass keeps the heavier body's influence
+            a.x = (a.x * a.mass + b.x * b.mass) / m;
+            a.y = (a.y * a.mass + b.y * b.mass) / m;
+            a.vx = (a.vx * a.mass + b.vx * b.mass) / m; // conserve momentum
+            a.vy = (a.vy * a.mass + b.vy * b.mass) / m;
+            a.mass = m;
+            bodies.splice(j, 1);
+            j--;
+          }
+        }
+      }
+    }
+
+    // Elastic collision response when merging is disabled.
+    function resolveBounces() {
+      for (let i = 0; i < bodies.length; i++) {
+        const a = bodies[i];
+        for (let j = i + 1; j < bodies.length; j++) {
+          const b = bodies[j];
+          const dx = b.x - a.x;
+          const dy = b.y - a.y;
+          let dist = Math.hypot(dx, dy);
+          const min = radiusOf(a.mass) + radiusOf(b.mass);
+          if (dist === 0 || dist >= min) continue;
+
+          const nx = dx / dist, ny = dy / dist;
+          // separate the overlap, weighted by mass
+          const overlap = min - dist;
+          const wa = b.mass / (a.mass + b.mass);
+          const wb = a.mass / (a.mass + b.mass);
+          a.x -= nx * overlap * wa; a.y -= ny * overlap * wa;
+          b.x += nx * overlap * wb; b.y += ny * overlap * wb;
+
+          // relative velocity along the normal
+          const rvn = (b.vx - a.vx) * nx + (b.vy - a.vy) * ny;
+          if (rvn > 0) continue; // already separating
+          const e = 0.92; // restitution
+          const imp = -(1 + e) * rvn / (1 / a.mass + 1 / b.mass);
+          a.vx -= (imp / a.mass) * nx; a.vy -= (imp / a.mass) * ny;
+          b.vx += (imp / b.mass) * nx; b.vy += (imp / b.mass) * ny;
+        }
+      }
+    }
+    /* ---------------------------------------------------------
+       Rendering
+       --------------------------------------------------------- */
+    // A fixed faint starfield so the void feels like space.
+    const stars = [];
+    function seedStars() {
+      stars.length = 0;
+      const count = 90;
+      for (let i = 0; i < count; i++) {
+        stars.push({ fx: Math.random(), fy: Math.random(), a: 0.2 + Math.random() * 0.5 });
+      }
+    }
+    seedStars();
+
+    function drawBackground() {
+      if (trailsInput.checked) {
+        // fade the previous frame to leave motion trails
+        ctx.fillStyle = "rgba(0, 0, 0, 0.16)";
+        ctx.fillRect(0, 0, W, H);
+      } else {
+        ctx.fillStyle = "#000";
+        ctx.fillRect(0, 0, W, H);
+      }
+      // stars drawn on top of the fade so they never trail
+      ctx.save();
+      for (let i = 0; i < stars.length; i++) {
+        const s = stars[i];
+        ctx.globalAlpha = s.a;
+        ctx.fillStyle = "#9fd8ff";
+        ctx.fillRect(s.fx * W, s.fy * H, 1.4, 1.4);
+      }
+      ctx.restore();
+    }
+
+    function drawBody(b) {
+      const r = radiusOf(b.mass);
+      const c = colorOf(b.mass);
+      const rgb = c.r + "," + c.g + "," + c.b;
+      // outer glow
+      ctx.save();
+      ctx.globalCompositeOperation = "lighter";
+      const grad = ctx.createRadialGradient(b.x, b.y, r * 0.15, b.x, b.y, r * 2.6);
+      grad.addColorStop(0, "rgba(" + rgb + ",0.9)");
+      grad.addColorStop(0.35, "rgba(" + rgb + ",0.35)");
+      grad.addColorStop(1, "rgba(" + rgb + ",0)");
+      ctx.fillStyle = grad;
+      ctx.beginPath();
+      ctx.arc(b.x, b.y, r * 2.6, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.restore();
+      // solid core with a bright highlight
+      const core = ctx.createRadialGradient(
+        b.x - r * 0.3, b.y - r * 0.3, r * 0.1, b.x, b.y, r
+      );
+      core.addColorStop(0, "rgba(255,255,255,0.95)");
+      core.addColorStop(0.4, "rgba(" + rgb + ",1)");
+      core.addColorStop(1, "rgba(" + Math.round(c.r * 0.6) + "," + Math.round(c.g * 0.6) + "," + Math.round(c.b * 0.6) + ",1)");
+      ctx.fillStyle = core;
+      ctx.beginPath();
+      ctx.arc(b.x, b.y, r, 0, Math.PI * 2);
+      ctx.fill();
+    }
+
+    // Drag preview (aim line + ghost body).
+    function drawAim() {
+      if (!drag.active) return;
+      const dx = drag.curX - drag.startX;
+      const dy = drag.curY - drag.startY;
+      ctx.save();
+      ctx.strokeStyle = "rgba(53, 224, 255, 0.8)";
+      ctx.lineWidth = 2;
+      ctx.setLineDash([6, 6]);
+      ctx.beginPath();
+      ctx.moveTo(drag.startX, drag.startY);
+      ctx.lineTo(drag.curX, drag.curY);
+      ctx.stroke();
+      ctx.setLineDash([]);
+      // ghost of the body to be launched
+      const r = radiusOf(parseFloat(massInput.value));
+      ctx.globalAlpha = 0.7;
+      ctx.fillStyle = "rgba(200, 230, 255, 0.5)";
+      ctx.beginPath();
+      ctx.arc(drag.startX, drag.startY, r, 0, Math.PI * 2);
+      ctx.fill();
+      // arrowhead showing launch direction
+      const len = Math.hypot(dx, dy);
+      if (len > 4) {
+        const ux = dx / len, uy = dy / len;
+        ctx.globalAlpha = 1;
+        ctx.fillStyle = "rgba(53, 224, 255, 0.9)";
+        ctx.beginPath();
+        ctx.moveTo(drag.curX, drag.curY);
+        ctx.lineTo(drag.curX - ux * 12 - uy * 6, drag.curY - uy * 12 + ux * 6);
+        ctx.lineTo(drag.curX - ux * 12 + uy * 6, drag.curY - uy * 12 - ux * 6);
+        ctx.fill();
+      }
+      ctx.restore();
+    }
+    /* ---------------------------------------------------------
+       Main loop
+       --------------------------------------------------------- */
+    let lastCount = -1;
+    function frame() {
+      if (!paused) {
+        const dt = 1 / SUBSTEPS;
+        for (let s = 0; s < SUBSTEPS; s++) step(dt);
+      }
+      drawBackground();
+      for (let i = 0; i < bodies.length; i++) drawBody(bodies[i]);
+      drawAim();
+
+      if (bodies.length !== lastCount) {
+        countEl.textContent = bodies.length;
+        lastCount = bodies.length;
+      }
+      requestAnimationFrame(frame);
+    }
+
+    /* ---------------------------------------------------------
+       Scene generators
+       --------------------------------------------------------- */
+    // Circular-orbit speed about a central mass under the current G.
+    function orbitalSpeed(centralMass, r) {
+      return Math.sqrt(effectiveG() * centralMass / r);
+    }
+
+    function spawnGalaxy() {
+      bodies = [];
+      const centralMass = 4200;
+      bodies.push(makeBody(cx(), cy(), 0, 0, centralMass));
+
+      const n = 130;
+      const maxR = Math.min(W, H) * 0.44;
+      for (let i = 0; i < n; i++) {
+        const r = 55 + Math.random() * maxR;
+        const ang = Math.random() * Math.PI * 2;
+        const x = cx() + Math.cos(ang) * r;
+        const y = cy() + Math.sin(ang) * r;
+        let v = orbitalSpeed(centralMass, r);
+        v *= 0.97 + Math.random() * 0.06; // slight spread
+        // velocity perpendicular to the radius (counter-clockwise)
+        const vx = -Math.sin(ang) * v;
+        const vy = Math.cos(ang) * v;
+        bodies.push(makeBody(x, y, vx, vy, 1 + Math.random() * 5));
+      }
+    }
+    function spawnBinary() {
+      bodies = [];
+      const starMass = 1700;
+      const total = starMass * 2;
+      const d = Math.min(W, H) * 0.18; // separation
+      // equal-mass pair: each orbits the centre at d/2, speed = vRel/2
+      const vRel = Math.sqrt(effectiveG() * total / d);
+      const v1 = vRel / 2;
+
+      bodies.push(makeBody(cx() - d / 2, cy(), 0, -v1, starMass));
+      bodies.push(makeBody(cx() + d / 2, cy(), 0, v1, starMass));
+
+      // asteroids orbiting the whole pair from outside
+      const n = 90;
+      const innerR = d * 1.5;
+      const maxR = Math.min(W, H) * 0.46;
+      for (let i = 0; i < n; i++) {
+        const r = innerR + Math.random() * Math.max(30, maxR - innerR);
+        const ang = Math.random() * Math.PI * 2;
+        const x = cx() + Math.cos(ang) * r;
+        const y = cy() + Math.sin(ang) * r;
+        const v = orbitalSpeed(total, r) * (0.97 + Math.random() * 0.06);
+        bodies.push(makeBody(x, y, -Math.sin(ang) * v, Math.cos(ang) * v, 1 + Math.random() * 4));
+      }
+    }
+    /* ---------------------------------------------------------
+       Pointer input: drag to slingshot, click to place at rest
+       --------------------------------------------------------- */
+    const drag = { active: false, startX: 0, startY: 0, curX: 0, curY: 0 };
+
+    function pointerPos(e) {
+      const rect = canvas.getBoundingClientRect();
+      return { x: e.clientX - rect.left, y: e.clientY - rect.top };
+    }
+
+    canvas.addEventListener("pointerdown", function (e) {
+      const p = pointerPos(e);
+      drag.active = true;
+      drag.startX = drag.curX = p.x;
+      drag.startY = drag.curY = p.y;
+      canvas.setPointerCapture(e.pointerId);
+    });
+
+    canvas.addEventListener("pointermove", function (e) {
+      if (!drag.active) return;
+      const p = pointerPos(e);
+      drag.curX = p.x;
+      drag.curY = p.y;
+    });
+
+    canvas.addEventListener("pointerup", function (e) {
+      if (!drag.active) return;
+      drag.active = false;
+      const p = pointerPos(e);
+      const dx = p.x - drag.startX;
+      const dy = p.y - drag.startY;
+      const mass = parseFloat(massInput.value);
+      // short drag == click: place a body at rest
+      if (Math.hypot(dx, dy) < 6) {
+        addBody(makeBody(drag.startX, drag.startY, 0, 0, mass));
+      } else {
+        // launch in the drag direction; farther drag == faster
+        addBody(makeBody(drag.startX, drag.startY, dx * LAUNCH_K, dy * LAUNCH_K, mass));
+      }
+    });
+
+    canvas.addEventListener("pointercancel", function () { drag.active = false; });
+    /* ---------------------------------------------------------
+       Control wiring
+       --------------------------------------------------------- */
+    function syncLabels() {
+      gravityVal.textContent = parseFloat(gravityInput.value).toFixed(2);
+      expansionVal.textContent = expansionInput.value;
+      massVal.textContent = massInput.value;
+    }
+    gravityInput.addEventListener("input", syncLabels);
+    expansionInput.addEventListener("input", syncLabels);
+    massInput.addEventListener("input", syncLabels);
+
+    pauseBtn.addEventListener("click", function () {
+      paused = !paused;
+      pauseBtn.textContent = paused ? "Resume" : "Pause";
+      pauseBtn.classList.toggle("is-active", paused);
+    });
+
+    clearBtn.addEventListener("click", function () {
+      bodies = [];
+      ctx.fillStyle = "#000";
+      ctx.fillRect(0, 0, W, H);
+    });
+
+    galaxyBtn.addEventListener("click", spawnGalaxy);
+    binaryBtn.addEventListener("click", spawnBinary);
+
+    // When trails are turned off, wipe the canvas once so old streaks clear.
+    trailsInput.addEventListener("change", function () {
+      if (!trailsInput.checked) {
+        ctx.fillStyle = "#000";
+        ctx.fillRect(0, 0, W, H);
+      }
+    });
+
+    /* ---------------------------------------------------------
+       Init — Galaxy scene appears automatically on load
+       --------------------------------------------------------- */
+    resize();
+    syncLabels();
+    spawnGalaxy();
+    requestAnimationFrame(frame);
+  })();
+  </script>
+</body>
+</html>
+

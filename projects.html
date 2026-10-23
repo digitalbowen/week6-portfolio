@@ -1,0 +1,294 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Projects — Alex Morgan</title>
+  <meta name="description" content="A project by Alex Morgan — a clean, friendly to-do list app." />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="css/style.css" />
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🌊</text></svg>" />
+</head>
+<body>
+
+  <!-- ============ Navbar ============ -->
+  <header class="navbar">
+    <div class="container navbar__inner">
+      <a class="brand" href="index.html">
+        <span class="brand__mark">A</span>
+        Alex Morgan
+      </a>
+      <button class="nav-toggle" aria-label="Toggle navigation menu" aria-expanded="false" aria-controls="navLinks">
+        <span></span>
+      </button>
+      <nav class="nav-links" id="navLinks">
+        <a href="index.html">Home</a>
+        <a href="resume.html">Resume</a>
+        <a href="projects.html" class="active">Projects</a>
+        <a href="contact.html">Contact Me</a>
+      </nav>
+    </div>
+  </header>
+
+  <main>
+    <!-- ============ Page hero ============ -->
+    <section class="page-hero">
+      <div class="container reveal">
+        <h1>My Projects ✨</h1>
+        <p>
+          A few little things I built — a to-do list to keep life organized, a weather app that
+          shows current conditions for any city, an interactive physics lesson where planets orbit
+          and collide under real gravity, a cute English word game for young learners, and a
+          vintage history timeline of Europe and China.
+        </p>
+      </div>
+    </section>
+
+    <section class="section" style="padding-top: 1rem;">
+      <div class="container todo-wrap">
+
+        <!-- ============ To-do card ============ -->
+        <div class="todo-card reveal">
+
+          <!-- Add-task form -->
+          <form class="todo-form" id="todoForm" novalidate>
+            <div class="todo-form__main">
+              <div class="field todo-field-task">
+                <label class="todo-label" for="todoInput">Task</label>
+                <input
+                  type="text"
+                  id="todoInput"
+                  placeholder="e.g. Finish portfolio design"
+                  autocomplete="off"
+                  maxlength="120" />
+              </div>
+              <div class="field todo-field-date">
+                <label class="todo-label" for="todoDate">Date</label>
+                <input type="date" id="todoDate" />
+              </div>
+              <div class="field todo-field-pickers">
+                <span class="todo-label">Options</span>
+                <div class="todo-pickers">
+                  <div class="emoji-picker" id="emojiPicker">
+                    <button
+                      type="button"
+                      class="emoji-picker__btn"
+                      id="emojiBtn"
+                      aria-haspopup="true"
+                      aria-expanded="false"
+                      aria-label="Task emoji: 📌 — change">📌</button>
+                    <div class="emoji-picker__pop" id="emojiPop">
+                      <button type="button" class="emoji-option is-selected" data-emoji="📌" aria-label="Pin">📌</button>
+                      <button type="button" class="emoji-option" data-emoji="✅" aria-label="Check mark">✅</button>
+                      <button type="button" class="emoji-option" data-emoji="🎯" aria-label="Target">🎯</button>
+                      <button type="button" class="emoji-option" data-emoji="📚" aria-label="Books">📚</button>
+                      <button type="button" class="emoji-option" data-emoji="💼" aria-label="Briefcase">💼</button>
+                      <button type="button" class="emoji-option" data-emoji="🏠" aria-label="House">🏠</button>
+                      <button type="button" class="emoji-option" data-emoji="🛒" aria-label="Shopping cart">🛒</button>
+                      <button type="button" class="emoji-option" data-emoji="💪" aria-label="Flexed biceps">💪</button>
+                      <button type="button" class="emoji-option" data-emoji="⏰" aria-label="Alarm clock">⏰</button>
+                      <button type="button" class="emoji-option" data-emoji="🎨" aria-label="Art">🎨</button>
+                      <button type="button" class="emoji-option" data-emoji="🎵" aria-label="Music">🎵</button>
+                      <button type="button" class="emoji-option" data-emoji="💰" aria-label="Money bag">💰</button>
+                      <button type="button" class="emoji-option" data-emoji="📞" aria-label="Phone">📞</button>
+                      <button type="button" class="emoji-option" data-emoji="🧹" aria-label="Broom">🧹</button>
+                      <button type="button" class="emoji-option" data-emoji="☕" aria-label="Coffee">☕</button>
+                      <button type="button" class="emoji-option" data-emoji="🎁" aria-label="Gift">🎁</button>
+                      <button type="button" class="emoji-option emoji-option--none" data-emoji="" aria-label="No emoji">None</button>
+                    </div>
+                  </div>
+                  <div class="prio-picker" id="prioPicker" role="radiogroup" aria-label="Task priority">
+                    <button type="button" class="prio-btn prio-btn--low" data-prio="low" role="radio" aria-checked="false">Low</button>
+                    <button type="button" class="prio-btn prio-btn--medium is-selected" data-prio="medium" role="radio" aria-checked="true">Med</button>
+                    <button type="button" class="prio-btn prio-btn--high" data-prio="high" role="radio" aria-checked="false">High</button>
+                  </div>
+                </div>
+              </div>
+              <button class="btn btn--primary todo-add-btn" type="submit">Add</button>
+            </div>
+            <p class="todo-error" id="todoError" role="alert"></p>
+          </form>
+
+          <!-- Summary -->
+          <div class="todo-summary" id="todoSummary" aria-live="polite">
+            <span id="todoCount">0 tasks</span>
+          </div>
+
+          <!-- Task list -->
+          <ul class="todo-list" id="todoList"></ul>
+
+          <!-- Empty state -->
+          <div class="todo-empty" id="todoEmpty">
+            <div class="todo-empty__icon">📝</div>
+            <p>No tasks yet</p>
+            <span>Add your first task above to get started!</span>
+          </div>
+
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ Weather app ============ -->
+    <section class="section" style="padding-top: 1rem;">
+      <div class="container weather-wrap">
+        <div class="section-head reveal">
+          <span class="eyebrow">Another project</span>
+          <h2>Weather App ☀️</h2>
+          <p>Type a city name and I'll look up its current conditions.</p>
+        </div>
+
+        <div class="weather-card reveal">
+          <form class="weather-form" id="weatherForm" novalidate>
+            <div class="weather-field">
+              <label class="weather-label" for="weatherInput">City</label>
+              <input
+                type="text"
+                id="weatherInput"
+                placeholder="e.g. Suzhou, Beijing, London"
+                autocomplete="off" />
+            </div>
+            <button class="btn btn--primary weather-btn" type="submit">Search</button>
+          </form>
+
+          <p class="weather-status" id="weatherStatus" role="status" aria-live="polite">
+            Enter a city to get started.
+          </p>
+
+          <div class="weather-result" id="weatherResult" hidden>
+            <span class="weather-icon" id="weatherIcon" aria-hidden="true">🌤️</span>
+            <div class="weather-info">
+              <span class="weather-city" id="weatherCity">—</span>
+              <span class="weather-temp" id="weatherTemp">—</span>
+              <span class="weather-cond" id="weatherCond">—</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ Physics lesson ============ -->
+    <section class="section" style="padding-top: 1rem;">
+      <div class="container">
+        <div class="section-head reveal">
+          <span class="eyebrow">A physics lesson</span>
+          <h2>Mechanics Phenomena Visualized 🪐</h2>
+          <p>
+            An interactive gravity sandbox for class. Bodies attract each other like real planets,
+            merge when they collide, and you can slingshot new worlds with a drag. Try the Galaxy
+            and Binary presets, or tune gravity and cosmic expansion with the sliders.
+          </p>
+        </div>
+
+        <a
+          class="physics-card reveal"
+          href="mechanics.html"
+          style="display:block; position:relative; overflow:hidden; border-radius: var(--radius-md);
+                 background: radial-gradient(900px 500px at 70% -20%, #0b1830, #05070d 60%);
+                 border: 1px solid #0f2238; box-shadow: var(--shadow-md); text-decoration:none;
+                 padding: 2.4rem 1.8rem; color: #cfe9ff;">
+          <span style="display:inline-block; font-size:0.72rem; letter-spacing:0.2em; text-transform:uppercase;
+                       color:#35e0ff; border:1px solid rgba(53,224,255,0.4); border-radius:999px;
+                       padding:0.25rem 0.8rem; margin-bottom:0.9rem;">Open the demo →</span>
+          <h3 style="color:#eafbff; font-size:1.5rem; margin-bottom:0.4rem;">Gravity &amp; Orbits Playground</h3>
+          <p style="color:#7f9bb3; max-width:46ch;">
+            Drag to launch a body, click to place one at rest, and watch gravity do the rest —
+            glowing planets, merging collisions, and stable star systems. Runs in a single HTML file.
+          </p>
+        </a>
+      </div>
+    </section>
+
+    <!-- ============ English learning app ============ -->
+    <section class="section" style="padding-top: 1rem;">
+      <div class="container">
+        <div class="section-head reveal">
+          <span class="eyebrow">A learning app for kids</span>
+          <h2>Let's Learn English 🍎</h2>
+          <p>
+            A picture-and-word matching game for little learners (ages 3–6). Each round shows a
+            picture and four words — tap the right one to move on. Wrong guesses get a gentle red ✗
+            and you keep trying; the correct word earns a green ✓, and finishing all three brings a
+            confetti celebration.
+          </p>
+        </div>
+
+        <a
+          class="english-card reveal"
+          href="english.html"
+          style="display:block; position:relative; overflow:hidden; border-radius: var(--radius-md);
+                 background: linear-gradient(160deg, #aee4ff, #cdeafe 45%, #ffd6ec); border: 4px solid #fff;
+                 box-shadow: var(--shadow-md); text-decoration:none; padding: 2.4rem 1.8rem; text-align:center;">
+          <div style="font-size:3.4rem; line-height:1;">🐣📚🍎🐶👁️</div>
+          <h3 style="color:#ff7aa8; font-size:1.6rem; margin:0.6rem 0 0.3rem; text-shadow:0 2px 0 #fff;">
+            Play the word game
+          </h3>
+          <p style="color:#6a5a85; max-width:46ch; margin:0 auto;">
+            Cute, colorful, and easy to tap — a friendly first taste of English words.
+            Runs in a single HTML file.
+          </p>
+        </a>
+      </div>
+    </section>
+
+    <!-- ============ History lesson ============ -->
+    <section class="section" style="padding-top: 1rem;">
+      <div class="container">
+        <div class="section-head reveal">
+          <span class="eyebrow">A history lesson</span>
+          <h2>A Timeline of Civilizations 📜</h2>
+          <p>
+            A side-by-side history timeline drawn strictly to scale — European realms above the
+            line, Chinese dynasties (with their 汉字 names) below. Overlapping periods are stacked
+            into separate lanes so nothing collides, and you can scroll across three thousand years
+            from the Zhou and the Roman Republic to the modern age.
+          </p>
+        </div>
+
+        <a
+          class="history-card reveal"
+          href="timeline.html"
+          style="display:block; position:relative; overflow:hidden; border-radius: var(--radius-md);
+                 background: radial-gradient(1200px 400px at 50% -40%, #f7eed6, transparent 60%), linear-gradient(160deg, #efe3c8, #d8c39a);
+                 border: 3px solid #8a7149; box-shadow: var(--shadow-md); text-decoration:none;
+                 padding: 2.4rem 1.8rem; text-align:center; color:#3a2e22;">
+          <div style="font-size:2.6rem; line-height:1;">🏛️ ⟷ 🀄</div>
+          <h3 style="font-family: Georgia, 'Times New Roman', serif; letter-spacing:0.04em;
+                     font-size:1.6rem; margin:0.6rem 0 0.3rem; color:#3a2e22;">
+            Open the timeline
+          </h3>
+          <p style="color:#6a5844; max-width:52ch; margin:0 auto; font-style:italic;">
+            Europe &amp; China, 1046&nbsp;BC to the present — every period placed by year, in a
+            vintage parchment style. Runs in a single HTML file.
+          </p>
+        </a>
+      </div>
+    </section>
+  </main>
+
+  <!-- ============ Footer ============ -->
+  <footer class="footer">
+    <div class="container">
+      <div class="footer__grid">
+        <div class="footer__fact">
+          <span class="icon">💡</span>
+          <div>
+            <strong>Fun fact about me</strong>
+            <span>I once held a (very unofficial) world record for stacking the most gummy bears on a spoon — 24!</span>
+          </div>
+        </div>
+        <div class="footer__social">
+          <a href="https://github.com/" target="_blank" rel="noopener" aria-label="GitHub">G</a>
+          <a href="https://www.linkedin.com/" target="_blank" rel="noopener" aria-label="LinkedIn">in</a>
+          <a href="https://dribbble.com/" target="_blank" rel="noopener" aria-label="Dribbble">Dr</a>
+          <a href="mailto:hello@alexmorgan.example" aria-label="Email">@</a>
+        </div>
+      </div>
+      <p class="footer__bottom">© 2026 Alex Morgan · Made with care, cinnamon, and a little CSS ✨</p>
+    </div>
+  </footer>
+
+  <script src="js/script.js"></script>
+</body>
+</html>

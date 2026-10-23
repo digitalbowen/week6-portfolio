@@ -1,0 +1,459 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>A Timeline of Civilizations — Europe &amp; China</title>
+  <meta name="description" content="A vintage parallel timeline of European historical periods and Chinese dynasties, placed to scale by year." />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@500;700&family=EB+Garamond:ital,wght@0,400;0,600;1,400&display=swap" rel="stylesheet" />
+  <style>
+    /* ============================================================
+       A Timeline of Civilizations — vintage parallel timeline
+       Europe above the axis, China below. One file, no frameworks.
+       ============================================================ */
+    :root {
+      --paper: #efe3c8;
+      --paper-dark: #e2d2ad;
+      --ink: #3a2e22;
+      --ink-soft: #6a5844;
+      --rule: #8a7149;
+      --axis: #4a3826;
+      --grid: rgba(120, 95, 60, 0.18);
+      --grid-strong: rgba(120, 95, 60, 0.34);
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    html, body { height: 100%; }
+
+    body {
+      font-family: "EB Garamond", "Palatino Linotype", Georgia, "Noto Serif SC", "Songti SC", "STSong", "SimSun", serif;
+      color: var(--ink);
+      background:
+        radial-gradient(1200px 600px at 50% -10%, #f7eed6, transparent 60%),
+        radial-gradient(100% 120% at 50% 50%, #efe3c8 55%, #d8c39a 100%);
+      background-color: var(--paper);
+      min-height: 100vh;
+      position: relative;
+    }
+
+    /* faint paper speckle + vignette for an aged feel */
+    body::before {
+      content: "";
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      background-image:
+        radial-gradient(rgba(90, 70, 40, 0.05) 1px, transparent 1px),
+        radial-gradient(rgba(90, 70, 40, 0.04) 1px, transparent 1px);
+      background-size: 7px 7px, 11px 11px;
+      background-position: 0 0, 3px 4px;
+      mix-blend-mode: multiply;
+    }
+    body::after {
+      content: "";
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      box-shadow: inset 0 0 160px rgba(60, 40, 15, 0.35);
+    }
+
+    /* ---------- Header ---------- */
+    header.page {
+      text-align: center;
+      padding: 1.8rem 1rem 1rem;
+      position: relative;
+      z-index: 1;
+    }
+    header.page h1 {
+      font-family: "Cinzel", Georgia, serif;
+      font-weight: 700;
+      font-size: clamp(1.5rem, 4vw, 2.6rem);
+      letter-spacing: 0.06em;
+      color: var(--ink);
+      text-shadow: 0 1px 0 #fff6e0;
+    }
+    header.page .flourish {
+      margin: 0.5rem auto 0.3rem;
+      width: min(540px, 80%);
+      height: 18px;
+      background:
+        radial-gradient(circle at center, var(--rule) 0 2px, transparent 3px) center/100% 100% no-repeat,
+        linear-gradient(90deg, transparent, var(--rule) 20%, var(--rule) 80%, transparent);
+      -webkit-mask: linear-gradient(90deg, transparent, #000 15%, #000 85%, transparent);
+              mask: linear-gradient(90deg, transparent, #000 15%, #000 85%, transparent);
+      opacity: 0.8;
+    }
+    header.page p.sub {
+      font-style: italic;
+      font-size: 1.05rem;
+      color: var(--ink-soft);
+    }
+
+    /* ---------- Legend ---------- */
+    .legend {
+      display: flex;
+      gap: 1.6rem;
+      justify-content: center;
+      flex-wrap: wrap;
+      margin: 0.6rem 0 0.2rem;
+      font-size: 0.98rem;
+      color: var(--ink-soft);
+      position: relative;
+      z-index: 1;
+    }
+    .legend b { color: var(--ink); font-weight: 600; }
+    .hint {
+      text-align: center;
+      font-style: italic;
+      font-size: 0.9rem;
+      color: var(--ink-soft);
+      opacity: 0.8;
+      margin-bottom: 0.4rem;
+    }
+
+    /* ---------- Scroll area + stage ---------- */
+    .scroll {
+      overflow-x: auto;
+      overflow-y: hidden;
+      padding: 0.5rem 0 2rem;
+      position: relative;
+      z-index: 1;
+      border-top: 2px solid var(--rule);
+      border-bottom: 2px solid var(--rule);
+      background: linear-gradient(180deg, rgba(255,255,255,0.12), transparent 8%, transparent 92%, rgba(80,55,25,0.08));
+    }
+    .scroll::-webkit-scrollbar { height: 12px; }
+    .scroll::-webkit-scrollbar-track { background: var(--paper-dark); }
+    .scroll::-webkit-scrollbar-thumb { background: var(--rule); border-radius: 6px; border: 2px solid var(--paper-dark); }
+
+    .timeline { position: relative; }
+
+    /* century gridlines */
+    .grid-line { position: absolute; top: 0; bottom: 0; width: 1px; background: var(--grid); }
+    .grid-line.major { background: var(--grid-strong); }
+
+    /* the central axis */
+    .axis {
+      position: absolute;
+      left: 0; right: 0;
+      height: 3px;
+      background: var(--axis);
+      box-shadow: 0 0 0 1px rgba(0,0,0,0.1), 0 2px 4px rgba(0,0,0,0.25);
+    }
+    .axis-cap { /* little arrow nibs at the ends of the era could go here */ }
+
+    /* year tick labels sit on the axis */
+    .tick-label {
+      position: absolute;
+      transform: translateX(-50%);
+      font-size: 0.78rem;
+      color: var(--ink-soft);
+      white-space: nowrap;
+      padding: 1px 5px;
+      background: var(--paper);
+      border: 1px solid rgba(120, 95, 60, 0.4);
+      border-radius: 3px;
+    }
+    /* a stem connecting each block back to the axis */
+    .stem {
+      position: absolute;
+      width: 1px;
+      background: rgba(74, 56, 38, 0.45);
+    }
+
+    /* ---------- Period blocks ---------- */
+    .block {
+      position: absolute;
+      height: 26px;
+      border-radius: 4px;
+      border: 1px solid rgba(40, 28, 16, 0.55);
+      box-shadow: inset 0 1px 0 rgba(255,255,255,0.25), 0 2px 5px rgba(50, 35, 15, 0.3);
+      cursor: default;
+      transition: transform 0.1s ease, box-shadow 0.1s ease, filter 0.1s ease;
+    }
+    .block::before { /* subtle aged texture over the fill */
+      content: "";
+      position: absolute;
+      inset: 0;
+      border-radius: inherit;
+      background: linear-gradient(180deg, rgba(255,255,255,0.18), rgba(0,0,0,0.12));
+      pointer-events: none;
+    }
+    .block:hover {
+      transform: translateY(-1px) scale(1.012);
+      box-shadow: inset 0 1px 0 rgba(255,255,255,0.3), 0 5px 12px rgba(50, 35, 15, 0.45);
+      filter: saturate(1.1);
+      z-index: 20;
+    }
+
+    /* the label pill, centred over the block (may extend past a thin bar) */
+    .label {
+      position: absolute;
+      transform: translate(-50%, -50%);
+      white-space: nowrap;
+      font-size: 12px;
+      line-height: 1.15;
+      text-align: center;
+      padding: 2px 7px;
+      border-radius: 10px;
+      background: rgba(247, 238, 214, 0.9);
+      border: 1px solid rgba(120, 95, 60, 0.5);
+      color: var(--ink);
+      pointer-events: none;
+      box-shadow: 0 1px 3px rgba(50,35,15,0.25);
+    }
+    .label .yr { display: block; font-size: 10px; font-style: italic; color: var(--ink-soft); }
+
+    @media (prefers-reduced-motion: reduce) { .block { transition: none; } }
+  </style>
+</head>
+<body>
+  <header class="page">
+    <h1>A Timeline of Civilizations</h1>
+    <div class="flourish"></div>
+    <p class="sub">European Realms &amp; Chinese Dynasties, drawn to scale from 1046&nbsp;BC to the present</p>
+    <div class="legend">
+      <span>▲ Above the line — <b>Europe</b></span>
+      <span><b>China</b> — Below the line ▼</span>
+    </div>
+  </header>
+
+  <p class="hint">Scroll sideways to travel through the centuries · hover a block for its dates</p>
+
+  <div class="scroll" id="scroll">
+    <div class="timeline" id="timeline"></div>
+  </div>
+
+  <script>
+  (function () {
+    "use strict";
+
+    /* ---------------------------------------------------------
+       Data — years as integers (negative = BC, positive = AD)
+       --------------------------------------------------------- */
+    const EUROPE = [
+      { name: "Roman Republic", start: -509, end: -27 },
+      { name: "Western Roman Empire", start: -27, end: 476 },
+      { name: "Eastern Roman Empire", start: 330, end: 1453 },
+      { name: "Middle Ages", start: 476, end: 1453 },
+      { name: "Frankish Kingdom", start: 481, end: 843 },
+      { name: "Kievan Rus'", start: 882, end: 1240 },
+      { name: "Duchy of Normandy", start: 911, end: 1204 },
+      { name: "Kingdom of England", start: 927, end: 1707 },
+      { name: "Holy Roman Empire", start: 962, end: 1806 },
+      { name: "Grand Duchy of Moscow", start: 1283, end: 1547 },
+      { name: "Ottoman Empire", start: 1299, end: 1923 },
+      { name: "Portuguese Empire", start: 1415, end: 1999 },
+      { name: "Spanish Empire", start: 1492, end: 1898 },
+      { name: "Tsardom of Russia", start: 1547, end: 1721 },
+      { name: "Dutch Republic", start: 1581, end: 1795 },
+      { name: "Commonwealth of England", start: 1649, end: 1660 },
+      { name: "Russian Empire", start: 1721, end: 1917 },
+      { name: "First French Empire", start: 1804, end: 1815 },
+      { name: "German Confederation", start: 1815, end: 1866 },
+      { name: "Kingdom of Italy", start: 1861, end: 1946 },
+      { name: "Austro-Hungarian Empire", start: 1867, end: 1918 },
+      { name: "German Empire", start: 1871, end: 1918 },
+      { name: "Soviet Union", start: 1922, end: 1991 }
+    ];
+    const CHINA = [
+      { name: "Zhou 周", start: -1046, end: -256 },
+      { name: "Qin 秦", start: -221, end: -207 },
+      { name: "Han 汉", start: -202, end: 220 },
+      { name: "Three Kingdoms 三国", start: 220, end: 280 },
+      { name: "Jin 晋", start: 265, end: 420 },
+      { name: "Northern & Southern Dynasties 南北朝", start: 420, end: 589 },
+      { name: "Sui 隋", start: 581, end: 618 },
+      { name: "Tang 唐", start: 618, end: 907 },
+      { name: "Five Dynasties 五代", start: 907, end: 960 },
+      { name: "Song 宋", start: 960, end: 1279 },
+      { name: "Yuan 元", start: 1271, end: 1368 },
+      { name: "Ming 明", start: 1368, end: 1644 },
+      { name: "Qing 清", start: 1636, end: 1912 }
+    ];
+
+    // muted vintage palettes — cool tones for Europe, warm for China
+    const EU_COLORS = ["#5f7487", "#6f7d55", "#7a6a86", "#4f7370", "#86684f",
+                       "#577089", "#6b6f4e", "#805a5a", "#4e6a5a", "#737089",
+                       "#8a7340", "#5a6b6b"];
+    const CN_COLORS = ["#9c5a46", "#b0803c", "#8c4a3a", "#a86a2e", "#7a4a2e",
+                       "#9c6b2e", "#a8564a", "#8a5a30", "#6f4530"];
+
+    /* ---------------------------------------------------------
+       Scale: map a year to an x-position in pixels
+       --------------------------------------------------------- */
+    const MIN_YEAR = -1046;
+    const MAX_YEAR = 2000;
+    const PX_PER_YEAR = 2.5;
+    const PAD = 70; // left/right breathing room (px)
+
+    const totalWidth = (MAX_YEAR - MIN_YEAR) * PX_PER_YEAR + PAD * 2;
+    function xOf(year) { return PAD + (year - MIN_YEAR) * PX_PER_YEAR; }
+
+    // geometry
+    const BLOCK_H = 26;
+    const LANE_STEP = 42;   // vertical distance between stacked lanes
+    const AXIS_GAP = 30;    // gap between axis and the first lane
+    const LABEL_FONT = "12px 'EB Garamond', Georgia, 'Noto Serif SC', 'Songti SC', 'STSong', 'SimSun', serif";
+    /* ---------------------------------------------------------
+       Helpers
+       --------------------------------------------------------- */
+    // measure label width with the real font so packing reserves room for it
+    const canvas = document.createElement("canvas");
+    const mctx = canvas.getContext("2d");
+    mctx.font = LABEL_FONT;
+    function labelWidth(text) { return mctx.measureText(text).width + 16; } // + pill padding
+
+    function fmtYear(y) {
+      if (y < 0) return Math.abs(y) + " BC";
+      return y + (y === 0 ? "" : " AD");
+    }
+    function fmtRange(s, e) {
+      if (s < 0 && e < 0) return Math.abs(s) + "–" + Math.abs(e) + " BC";
+      if (s < 0 && e >= 0) return Math.abs(s) + " BC – " + e + " AD";
+      return s + "–" + e;
+    }
+
+    /* Greedy lane packing. Each item reserves the horizontal span of
+       whichever is wider — its bar or its centred label — so neither
+       bars nor labels can ever collide. Returns the lane count. */
+    function packLanes(items) {
+      items.forEach(function (it) {
+        it.x0 = xOf(it.start);
+        it.x1 = xOf(it.end);
+        it.cx = (it.x0 + it.x1) / 2;
+        const lw = labelWidth(it.name);
+        it.lw = lw;
+        it.left = Math.min(it.x0, it.cx - lw / 2) - 6;   // reserved span (+gap)
+        it.right = Math.max(it.x1, it.cx + lw / 2) + 6;
+      });
+      const sorted = items.slice().sort(function (a, b) { return a.left - b.left; });
+      const laneEnds = []; // right edge currently occupied in each lane
+      sorted.forEach(function (it) {
+        let lane = -1;
+        for (let i = 0; i < laneEnds.length; i++) {
+          if (laneEnds[i] <= it.left) { lane = i; break; }
+        }
+        if (lane === -1) { lane = laneEnds.length; laneEnds.push(0); }
+        laneEnds[lane] = it.right;
+        it.lane = lane;
+      });
+      return laneEnds.length;
+    }
+    /* ---------------------------------------------------------
+       Build the layout
+       --------------------------------------------------------- */
+    const tl = document.getElementById("timeline");
+    const scroll = document.getElementById("scroll");
+
+    function build() {
+      tl.innerHTML = "";
+    const euLanes = packLanes(EUROPE);
+    const cnLanes = packLanes(CHINA);
+
+    const TOP_MARGIN = 26;
+    const BOTTOM_MARGIN = 48; // room for the lowest lane + edge
+    const axisY = TOP_MARGIN + (euLanes - 1) * LANE_STEP + BLOCK_H + AXIS_GAP;
+    const totalHeight = axisY + AXIS_GAP + (cnLanes - 1) * LANE_STEP + BLOCK_H + BOTTOM_MARGIN;
+
+    tl.style.width = totalWidth + "px";
+    tl.style.height = totalHeight + "px";
+
+    // ----- century gridlines + year ticks -----
+    const firstLine = Math.ceil(MIN_YEAR / 100) * 100;
+    for (let y = firstLine; y <= MAX_YEAR; y += 100) {
+      const line = document.createElement("div");
+      line.className = "grid-line" + (y % 500 === 0 ? " major" : "");
+      line.style.left = xOf(y) + "px";
+      tl.appendChild(line);
+
+      if (y % 200 === 0) {
+        const lab = document.createElement("div");
+        lab.className = "tick-label";
+        lab.style.left = xOf(y) + "px";
+        lab.style.top = (axisY - 11) + "px";
+        lab.textContent = fmtYear(y);
+        tl.appendChild(lab);
+      }
+    }
+
+    // ----- the axis line -----
+    const axis = document.createElement("div");
+    axis.className = "axis";
+    axis.style.top = axisY + "px";
+    tl.appendChild(axis);
+    // ----- period blocks -----
+    function renderSide(items, colors, side) {
+      items.forEach(function (it, i) {
+        const color = colors[i % colors.length];
+        const width = Math.max(3, it.x1 - it.x0);
+
+        // vertical position depends on side + lane
+        let blockTop, stemTop, stemH;
+        if (side === "top") {
+          const bottom = axisY - AXIS_GAP - it.lane * LANE_STEP;
+          blockTop = bottom - BLOCK_H;
+          stemTop = bottom;
+          stemH = axisY - bottom;
+        } else {
+          blockTop = axisY + AXIS_GAP + it.lane * LANE_STEP;
+          stemTop = axisY;
+          stemH = blockTop - axisY;
+        }
+
+        // stem back to the axis, aligned to the start year
+        const stem = document.createElement("div");
+        stem.className = "stem";
+        stem.style.left = it.x0 + "px";
+        stem.style.top = stemTop + "px";
+        stem.style.height = stemH + "px";
+        tl.appendChild(stem);
+
+        // the block itself
+        const block = document.createElement("div");
+        block.className = "block";
+        block.style.left = it.x0 + "px";
+        block.style.top = blockTop + "px";
+        block.style.width = width + "px";
+        block.style.background = color;
+        block.title = it.name + " (" + fmtRange(it.start, it.end) + ")";
+        tl.appendChild(block);
+
+        // centred label pill (name + dates)
+        const label = document.createElement("div");
+        label.className = "label";
+        label.style.left = it.cx + "px";
+        label.style.top = (blockTop + BLOCK_H / 2) + "px";
+        label.innerHTML =
+          it.name.replace(/&/g, "&amp;") +
+          '<span class="yr">' + fmtRange(it.start, it.end) + "</span>";
+        tl.appendChild(label);
+      });
+    }
+
+    renderSide(EUROPE, EU_COLORS, "top");
+    renderSide(CHINA, CN_COLORS, "bottom");
+    }
+
+    build();
+
+    // open centred on the BC/AD boundary so both ancient and modern show
+    scroll.scrollLeft = xOf(0) - scroll.clientWidth / 2;
+
+    // re-pack once the vintage web font loads, so reserved label widths
+    // match the real metrics (prevents any thin-bar label overlap)
+    if (document.fonts && document.fonts.ready) {
+      document.fonts.ready.then(function () {
+        mctx.font = LABEL_FONT;
+        const keep = scroll.scrollLeft;
+        build();
+        scroll.scrollLeft = keep;
+      });
+    }
+  })();
+  </script>
+</body>
+</html>

@@ -1,0 +1,459 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Let's Learn English — Word Quiz</title>
+  <meta name="description" content="A cute word-matching game that helps little learners (ages 3–6) learn their first English words." />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600;700&family=Nunito:wght@600;700;800&display=swap" rel="stylesheet" />
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🍎</text></svg>" />
+  <style>
+    /* ============================================================
+       Let's Learn English — a cute word quiz for ages 3–6
+       Single file. No frameworks.
+       ============================================================ */
+    :root {
+      --sky: #aee4ff;
+      --sky-2: #ffd6ec;
+      --ink: #4a3b63;
+      --card: #ffffff;
+      --green: #4caf50;
+      --green-soft: #e3f7e4;
+      --red: #ff5a7a;
+      --red-soft: #ffe1e8;
+      --sun: #ffd23f;
+      --grape: #a66cff;
+      --radius: 28px;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    html, body { height: 100%; }
+
+    body {
+      font-family: "Fredoka", "Nunito", "Segoe UI", system-ui, sans-serif;
+      color: var(--ink);
+      background: linear-gradient(160deg, var(--sky) 0%, #cdeafe 45%, var(--sky-2) 100%);
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 1.2rem;
+      overflow-x: hidden;
+    }
+
+    /* floating background bubbles for a playful feel */
+    .bubbles { position: fixed; inset: 0; overflow: hidden; z-index: 0; pointer-events: none; }
+    .bubbles span {
+      position: absolute;
+      bottom: -60px;
+      font-size: 2rem;
+      animation: rise linear infinite;
+      opacity: 0.55;
+    }
+    @keyframes rise {
+      0% { transform: translateY(0) rotate(0deg); }
+      100% { transform: translateY(-115vh) rotate(260deg); }
+    }
+
+    /* ---------- Screen system: exactly one visible at a time ---------- */
+    .screen { display: none; position: relative; z-index: 1; width: 100%; }
+    .screen.is-active { display: block; animation: popIn 0.4s ease both; }
+
+    @keyframes popIn {
+      0% { opacity: 0; transform: scale(0.92) translateY(10px); }
+      100% { opacity: 1; transform: scale(1) translateY(0); }
+    }
+
+    .card {
+      width: min(560px, 100%);
+      margin: 0 auto;
+      background: var(--card);
+      border-radius: var(--radius);
+      box-shadow: 0 20px 50px rgba(103, 84, 150, 0.28);
+      padding: 2rem 1.8rem 2.2rem;
+      text-align: center;
+      border: 4px solid #fff;
+    }
+
+    /* ---------- Home screen ---------- */
+    .home-emoji { font-size: 4.5rem; line-height: 1; animation: bob 2.4s ease-in-out infinite; }
+    @keyframes bob { 0%,100% { transform: translateY(0); } 50% { transform: translateY(-12px); } }
+
+    .home-title {
+      font-size: clamp(2rem, 7vw, 2.9rem);
+      font-weight: 700;
+      margin: 0.6rem 0 0.3rem;
+      color: #ff7aa8;
+      text-shadow: 0 3px 0 #fff, 0 4px 6px rgba(0,0,0,0.12);
+    }
+    .home-sub { font-size: 1.1rem; color: #7a6a95; margin-bottom: 1.6rem; }
+
+    .btn-big {
+      font-family: inherit;
+      font-size: 1.5rem;
+      font-weight: 700;
+      color: #fff;
+      border: none;
+      cursor: pointer;
+      padding: 0.9rem 2.6rem;
+      border-radius: 999px;
+      background: linear-gradient(180deg, #ffd23f, #ffb02e);
+      box-shadow: 0 8px 0 #e9962a, 0 12px 20px rgba(233, 150, 42, 0.4);
+      transition: transform 0.08s ease, box-shadow 0.08s ease;
+    }
+    .btn-big:hover { transform: translateY(-2px); }
+    .btn-big:active { transform: translateY(5px); box-shadow: 0 3px 0 #e9962a, 0 6px 12px rgba(233, 150, 42, 0.4); }
+    .btn-big--green { background: linear-gradient(180deg, #7bd87f, #4caf50); box-shadow: 0 8px 0 #3b8c3f, 0 12px 20px rgba(59,140,63,0.4); }
+    .btn-big--green:active { box-shadow: 0 3px 0 #3b8c3f, 0 6px 12px rgba(59,140,63,0.4); }
+
+    /* ---------- Question screen ---------- */
+    .progress { display: flex; justify-content: center; gap: 0.5rem; margin-bottom: 1rem; font-size: 1.4rem; }
+    .progress span { filter: grayscale(1); opacity: 0.4; transition: all 0.3s ease; }
+    .progress span.done { filter: none; opacity: 1; transform: scale(1.15); }
+
+    .q-prompt { font-size: 1.25rem; font-weight: 600; color: #7a6a95; margin-bottom: 0.9rem; }
+
+    .q-image {
+      width: 220px;
+      height: 220px;
+      max-width: 72vw;
+      object-fit: contain;
+      margin: 0 auto 1.3rem;
+      display: block;
+      border-radius: 24px;
+      background: #fff8e6;
+      border: 6px solid #ffe9a8;
+      box-shadow: 0 10px 24px rgba(0,0,0,0.1);
+      padding: 10px;
+    }
+
+    .options {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 0.9rem;
+    }
+
+    .option {
+      position: relative;
+      font-family: inherit;
+      font-size: 1.4rem;
+      font-weight: 600;
+      color: var(--ink);
+      background: #f3f0ff;
+      border: 3px solid #e4ddff;
+      border-radius: 20px;
+      padding: 1rem 0.6rem;
+      cursor: pointer;
+      transition: transform 0.08s ease, background 0.15s ease, border-color 0.15s ease;
+      text-transform: capitalize;
+    }
+    .option:not(:disabled):hover { transform: translateY(-3px); background: #eae3ff; }
+    .option:not(:disabled):active { transform: translateY(0); }
+
+    /* a little badge for the ✓ / ✗ marks */
+    .option .mark {
+      position: absolute;
+      top: -14px;
+      right: -10px;
+      width: 38px;
+      height: 38px;
+      border-radius: 50%;
+      display: grid;
+      place-items: center;
+      font-size: 1.3rem;
+      color: #fff;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+      transform: scale(0);
+    }
+
+    .option.wrong {
+      background: var(--red-soft);
+      border-color: var(--red);
+      color: var(--red);
+      animation: shake 0.4s ease;
+    }
+    .option.wrong .mark { background: var(--red); transform: scale(1); }
+
+    .option.correct {
+      background: var(--green-soft);
+      border-color: var(--green);
+      color: var(--green);
+      animation: pop 0.45s ease;
+    }
+    .option.correct .mark { background: var(--green); transform: scale(1); }
+
+    @keyframes shake {
+      0%,100% { transform: translateX(0); }
+      20% { transform: translateX(-8px); }
+      40% { transform: translateX(8px); }
+      60% { transform: translateX(-5px); }
+      80% { transform: translateX(5px); }
+    }
+    @keyframes pop {
+      0% { transform: scale(1); }
+      50% { transform: scale(1.08); }
+      100% { transform: scale(1); }
+    }
+    .feedback {
+      min-height: 1.8rem;
+      margin-top: 1.1rem;
+      font-size: 1.2rem;
+      font-weight: 600;
+    }
+    .feedback.good { color: var(--green); }
+    .feedback.bad { color: var(--red); }
+
+    /* ---------- Victory screen ---------- */
+    .win-emoji { font-size: 5rem; animation: bob 1.8s ease-in-out infinite; }
+    .win-title {
+      font-size: clamp(2rem, 7vw, 2.8rem);
+      font-weight: 700;
+      color: #ffb02e;
+      text-shadow: 0 3px 0 #fff, 0 4px 6px rgba(0,0,0,0.12);
+      margin: 0.4rem 0 0.3rem;
+    }
+    .win-sub { font-size: 1.15rem; color: #7a6a95; margin-bottom: 1.6rem; }
+    .win-stars { font-size: 2.4rem; margin-bottom: 1.2rem; letter-spacing: 0.2rem; }
+
+    /* confetti pieces */
+    .confetti { position: fixed; inset: 0; overflow: hidden; pointer-events: none; z-index: 2; }
+    .confetti i {
+      position: absolute;
+      top: -20px;
+      font-size: 1.6rem;
+      animation: fall linear forwards;
+    }
+    @keyframes fall {
+      0% { transform: translateY(-20px) rotate(0deg); opacity: 1; }
+      100% { transform: translateY(105vh) rotate(540deg); opacity: 0.9; }
+    }
+
+    @media (max-width: 420px) {
+      .options { gap: 0.6rem; }
+      .option { font-size: 1.2rem; padding: 0.85rem 0.4rem; }
+      .q-image { width: 180px; height: 180px; }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      * { animation: none !important; }
+    }
+  </style>
+</head>
+<body>
+  <!-- playful floating background -->
+  <div class="bubbles" aria-hidden="true"></div>
+
+  <!-- ============ Home screen (shown first) ============ -->
+  <section class="screen is-active" id="screen-home">
+    <div class="card">
+      <div class="home-emoji">🐣📚</div>
+      <h1 class="home-title">Let's learning English</h1>
+      <p class="home-sub">Tap the word that matches the picture!</p>
+      <button class="btn-big" id="startBtn" type="button">▶ Start</button>
+    </div>
+  </section>
+
+  <!-- ============ Question screen (one at a time) ============ -->
+  <section class="screen" id="screen-quiz" aria-live="polite">
+    <div class="card">
+      <div class="progress" id="progress" aria-hidden="true">
+        <span>⭐</span><span>⭐</span><span>⭐</span>
+      </div>
+      <p class="q-prompt">What is this?</p>
+      <img class="q-image" id="qImage" src="" alt="" />
+      <div class="options" id="options"></div>
+      <p class="feedback" id="feedback" role="status">&nbsp;</p>
+    </div>
+  </section>
+
+  <!-- ============ Victory screen (hidden until Q3 is correct) ============ -->
+  <section class="screen" id="screen-win">
+    <div class="card">
+      <div class="win-emoji">🎉🏆🎉</div>
+      <div class="win-stars">⭐⭐⭐</div>
+      <h2 class="win-title">You did it!</h2>
+      <p class="win-sub">You learned 3 new words! Great job, superstar!</p>
+      <button class="btn-big btn-big--green" id="againBtn" type="button">↻ Play again</button>
+    </div>
+  </section>
+  <script>
+  (function () {
+    "use strict";
+
+    /* ---------- Quiz data ---------- */
+    const QUESTIONS = [
+      { img: "1.jpg", answer: "apple", options: ["apple", "banana", "pear", "grape"] },
+      { img: "2.jpg", answer: "dog", options: ["dog", "cat", "mouse", "bird"] },
+      { img: "3.jpg", answer: "eye", options: ["eye", "hand", "foot", "nose"] }
+    ];
+
+    // a friendly emoji fallback, just in case an image file is missing
+    const EMOJI = { "1.jpg": "🍎", "2.jpg": "🐶", "3.jpg": "👁️" };
+
+    /* ---------- Elements ---------- */
+    const screens = {
+      home: document.getElementById("screen-home"),
+      quiz: document.getElementById("screen-quiz"),
+      win: document.getElementById("screen-win")
+    };
+    const startBtn = document.getElementById("startBtn");
+    const againBtn = document.getElementById("againBtn");
+    const qImage = document.getElementById("qImage");
+    const optionsEl = document.getElementById("options");
+    const feedbackEl = document.getElementById("feedback");
+    const progressEl = document.getElementById("progress");
+
+    let current = 0;
+
+    /* ---------- Screen switching: only one visible at a time ---------- */
+    function showScreen(name) {
+      Object.keys(screens).forEach(function (key) {
+        screens[key].classList.toggle("is-active", key === name);
+      });
+    }
+
+    /* ---------- Helpers ---------- */
+    function shuffle(arr) {
+      const a = arr.slice();
+      for (let i = a.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        const t = a[i]; a[i] = a[j]; a[j] = t;
+      }
+      return a;
+    }
+    function setFeedback(text, kind) {
+      feedbackEl.textContent = text || " ";
+      feedbackEl.className = "feedback" + (kind ? " " + kind : "");
+    }
+
+    function updateProgress() {
+      const stars = progressEl.children;
+      for (let i = 0; i < stars.length; i++) {
+        stars[i].classList.toggle("done", i < current);
+      }
+    }
+
+    /* ---------- Render a question ---------- */
+    function renderQuestion() {
+      const q = QUESTIONS[current];
+
+      // picture (with a gentle emoji fallback if the file can't load)
+      qImage.alt = "Picture of " + q.answer;
+      qImage.onerror = function () {
+        this.onerror = null; // guard against a fallback loop
+        const e = EMOJI[q.img] || "❓";
+        this.src =
+          "data:image/svg+xml," +
+          encodeURIComponent(
+            "<svg xmlns='http://www.w3.org/2000/svg' width='220' height='220'>" +
+            "<text x='50%' y='50%' font-size='150' text-anchor='middle' dominant-baseline='central'>" +
+            e + "</text></svg>"
+          );
+      };
+      qImage.src = q.img;
+
+      setFeedback("", null);
+      updateProgress();
+
+      // build four shuffled answer buttons
+      optionsEl.innerHTML = "";
+      shuffle(q.options).forEach(function (word) {
+        const btn = document.createElement("button");
+        btn.type = "button";
+        btn.className = "option";
+        btn.textContent = word;
+        btn.dataset.word = word;
+        const mark = document.createElement("span");
+        mark.className = "mark";
+        mark.setAttribute("aria-hidden", "true");
+        btn.appendChild(mark);
+        optionsEl.appendChild(btn);
+      });
+    }
+    /* ---------- Handle an answer (event delegation) ---------- */
+    optionsEl.addEventListener("click", function (event) {
+      const btn = event.target.closest(".option");
+      if (!btn || btn.disabled) return;
+
+      const q = QUESTIONS[current];
+      const mark = btn.querySelector(".mark");
+
+      if (btn.dataset.word === q.answer) {
+        // correct: green checkmark, lock the board, then advance
+        btn.classList.add("correct");
+        mark.textContent = "✓";
+        Array.prototype.forEach.call(optionsEl.children, function (b) {
+          b.disabled = true;
+        });
+        setFeedback("Yay! That's a " + q.answer + "! 🎉", "good");
+        current++;
+        setTimeout(function () {
+          if (current < QUESTIONS.length) {
+            renderQuestion();
+          } else {
+            updateProgress();
+            showScreen("win");
+            launchConfetti();
+          }
+        }, 1100);
+      } else {
+        // wrong: red cross on that choice; keep the others playable
+        btn.classList.add("wrong");
+        btn.disabled = true;
+        mark.textContent = "✗";
+        setFeedback("Oops, try again! 💪", "bad");
+      }
+    });
+
+    /* ---------- Buttons ---------- */
+    startBtn.addEventListener("click", function () {
+      current = 0;
+      renderQuestion();
+      showScreen("quiz");
+    });
+
+    againBtn.addEventListener("click", function () {
+      current = 0;
+      showScreen("home");
+    });
+    /* ---------- Decorations: background bubbles + win confetti ---------- */
+    (function fillBubbles() {
+      const bag = ["🫧", "⭐", "🌸", "🎈", "☁️", "🍀"];
+      const wrap = document.querySelector(".bubbles");
+      for (let i = 0; i < 12; i++) {
+        const s = document.createElement("span");
+        s.textContent = bag[i % bag.length];
+        s.style.left = Math.random() * 100 + "%";
+        s.style.fontSize = (1.4 + Math.random() * 2) + "rem";
+        s.style.animationDuration = (9 + Math.random() * 10) + "s";
+        s.style.animationDelay = (-Math.random() * 12) + "s";
+        wrap.appendChild(s);
+      }
+    })();
+
+    function launchConfetti() {
+      const bag = ["🎉", "⭐", "🎈", "🌈", "🍬", "✨"];
+      const wrap = document.createElement("div");
+      wrap.className = "confetti";
+      document.body.appendChild(wrap);
+      for (let i = 0; i < 40; i++) {
+        const piece = document.createElement("i");
+        piece.textContent = bag[Math.floor(Math.random() * bag.length)];
+        piece.style.left = Math.random() * 100 + "%";
+        piece.style.fontSize = (1.2 + Math.random() * 1.6) + "rem";
+        piece.style.animationDuration = (2.2 + Math.random() * 2.2) + "s";
+        piece.style.animationDelay = (Math.random() * 0.8) + "s";
+        wrap.appendChild(piece);
+      }
+      setTimeout(function () { wrap.remove(); }, 5200);
+    }
+
+    /* ---------- Start on the home screen only ---------- */
+    showScreen("home");
+  })();
+  </script>
+</body>
+</html>

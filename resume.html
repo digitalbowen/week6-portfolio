@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Resume — Alex Morgan</title>
+  <meta name="description" content="Alex Morgan's resume — work experience, education, and skills." />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="css/style.css" />
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🌊</text></svg>" />
+</head>
+<body>
+
+  <!-- ============ Navbar ============ -->
+  <header class="navbar">
+    <div class="container navbar__inner">
+      <a class="brand" href="index.html">
+        <span class="brand__mark">A</span>
+        Alex Morgan
+      </a>
+      <button class="nav-toggle" aria-label="Toggle navigation menu" aria-expanded="false" aria-controls="navLinks">
+        <span></span>
+      </button>
+      <nav class="nav-links" id="navLinks">
+        <a href="index.html">Home</a>
+        <a href="resume.html" class="active">Resume</a>
+        <a href="projects.html">Projects</a>
+        <a href="contact.html">Contact Me</a>
+      </nav>
+    </div>
+  </header>
+
+  <main>
+    <!-- ============ Page hero ============ -->
+    <section class="page-hero">
+      <div class="container reveal">
+        <h1>My Resume 📄</h1>
+        <p>
+          A quick tour of where I've worked, what I've learned, and the tools I use to bring
+          ideas to life.
+        </p>
+        <div style="margin-top: 1.6rem;">
+          <a class="btn btn--soft" id="printBtn" href="resume.pdf" download="resume.pdf">⬇️ Download PDF</a>
+        </div>
+      </div>
+    </section>
+
+    <section class="section" style="padding-top: 2rem;">
+      <div class="container">
+
+        <!-- ============ Summary ============ -->
+        <div class="panel reveal" style="margin-bottom: 1.6rem;">
+          <h2><span class="dot"></span> Summary</h2>
+          <p style="color: var(--text-muted); font-size: 0.98rem;">
+            I am a graduate student majoring in Digital Education at Xi'an Jiaotong-Liverpool
+            University (XJTLU).
+          </p>
+        </div>
+
+        <!-- ============ Experience ============ -->
+        <div class="panel reveal" style="margin-bottom: 1.6rem;">
+          <h2><span class="dot"></span> Experience</h2>
+          <div class="timeline">
+            <div class="timeline__item">
+              <span class="timeline__period">September – October 2024</span>
+              <h4>Instructional Design Intern</h4>
+              <p class="org">Xi'an Jiaotong-Liverpool University</p>
+              <ul class="bullets">
+                <li>Designed teaching materials.</li>
+              </ul>
+            </div>
+
+            <div class="timeline__item">
+              <span class="timeline__period">March – May 2025</span>
+              <h4>STEAM Teacher</h4>
+              <p class="org">Ulink High School</p>
+              <ul class="bullets">
+                <li>Taught STEAM courses.</li>
+              </ul>
+            </div>
+          </div>
+        </div>
+
+        <!-- ============ Education ============ -->
+        <div class="panel reveal" style="margin-bottom: 1.6rem;">
+          <h2><span class="dot"></span> Education</h2>
+          <div class="timeline">
+            <div class="timeline__item">
+              <span class="timeline__period">2023 — 2025</span>
+              <h4>Master's Degree in Digital Education</h4>
+              <p class="org">Xi'an Jiaotong-Liverpool University</p>
+            </div>
+            <div class="timeline__item">
+              <span class="timeline__period">2017 — 2021</span>
+              <h4>Bachelor's Degree in Information Security</h4>
+              <p class="org">Northeastern University</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- ============ Skills ============ -->
+        <div class="panel reveal">
+          <h2><span class="dot"></span> Skills</h2>
+
+          <div class="skill-group">
+            <h4 class="skill-group__label">Language</h4>
+            <div class="skill-tags">
+              <span>Mandarin Chinese (Native)</span>
+              <span class="alt">English (Fluent)</span>
+            </div>
+          </div>
+
+          <div class="skill-group">
+            <h4 class="skill-group__label">Instructional Design</h4>
+            <div class="skill-tags">
+              <span>ADDIE</span>
+              <span class="alt">Backward Design</span>
+              <span>Constructive Alignment</span>
+              <span class="alt">Project-Based Learning (PBL)</span>
+              <span>UDL</span>
+            </div>
+          </div>
+
+          <div class="skill-group">
+            <h4 class="skill-group__label">Tools &amp; Technologies</h4>
+            <div class="skill-tags">
+              <span>PowerPoint</span>
+              <span class="alt">Canva</span>
+              <span>H5P</span>
+              <span class="alt">Canvas LMS</span>
+              <span>Mentimeter</span>
+              <span class="alt">Basic Python/Scratch</span>
+            </div>
+          </div>
+
+          <div class="skill-group">
+            <h4 class="skill-group__label">Soft Skills</h4>
+            <div class="skill-tags">
+              <span>Classroom Management</span>
+              <span class="alt">Cross-Cultural Communication</span>
+              <span>Lesson Planning</span>
+              <span class="alt">Student Mentoring</span>
+              <span>Adaptability</span>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </section>
+  </main>
+
+  <!-- ============ Footer ============ -->
+  <footer class="footer">
+    <div class="container">
+      <div class="footer__grid">
+        <div class="footer__fact">
+          <span class="icon">💡</span>
+          <div>
+            <strong>Fun fact about me</strong>
+            <span>I once held a (very unofficial) world record for stacking the most gummy bears on a spoon — 24!</span>
+          </div>
+        </div>
+        <div class="footer__social">
+          <a href="https://github.com/" target="_blank" rel="noopener" aria-label="GitHub">G</a>
+          <a href="https://www.linkedin.com/" target="_blank" rel="noopener" aria-label="LinkedIn">in</a>
+          <a href="https://dribbble.com/" target="_blank" rel="noopener" aria-label="Dribbble">Dr</a>
+          <a href="mailto:hello@alexmorgan.example" aria-label="Email">@</a>
+        </div>
+      </div>
+      <p class="footer__bottom">© 2026 Alex Morgan · Made with care, cinnamon, and a little CSS ✨</p>
+    </div>
+  </footer>
+
+  <script src="js/script.js"></script>
+</body>
+</html>
